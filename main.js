@@ -95,8 +95,19 @@ window.draw = function() {
         }
     }
 
+    let progress = config.backgroundShade/255;
+
+    let clockish = "" + Math.floor(progress*12);
+    let extend = "" + Math.floor(((progress*12) - Math.floor(progress*12))*60);
+    clockish += ":" + (extend.length < 2 ? extend + "0" : extend);
+    
     stroke(Math.cbrt(256**3 - config.backgroundShade**3));
     config.backgroundShade = vslider(config.backgroundShade, 20, 70, 200, 0, 255);
+
+    textSize(50);
+    fill("#000000");
+    text(clockish, width * 0.9, height * 0.1)
+
 
 
     uiupd();
