@@ -108,10 +108,10 @@ window.draw = function() {
     textSize(50);
     text(clockish, width * 0.85, height * 0.1)
 
-    textSize(30);
     fill(256 - (Math.floor(progress * 2) * 256));
     textSize(50);
-    text(clockish, width * 0.85, height * 0.1)
+    text(clockish, width * 0.85, height * 0.1);
+    textSize(30);
     text("Melbourne Shade/Light Level", width * 0.73, height * 0.15);
 
 
