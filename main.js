@@ -64,6 +64,7 @@ window.draw = function() {
         switch (properties.TREE_DEN) {
             case "dense":
                 console.log((config.backgroundShade/255)**2);
+                // fill(0, 80, 51, 255);
                 fill(0, 80, 51, 255 * (config.backgroundShade/255)**2);
                 break;
             case "medium":
@@ -99,14 +100,14 @@ window.draw = function() {
 
     let clockish = "" + Math.floor(progress*12);
     let extend = "" + Math.floor(((progress*12) - Math.floor(progress*12))*60);
-    clockish += ":" + (extend.length < 2 ? extend + "0" : extend);
+    clockish += ":" + (extend.length < 2 ? extend + "0" : extend) + "am";
     
     stroke(Math.cbrt(256**3 - config.backgroundShade**3));
     config.backgroundShade = vslider(config.backgroundShade, 20, 70, 200, 0, 255);
 
     textSize(50);
     fill("#000000");
-    text(clockish, width * 0.9, height * 0.1)
+    text(clockish, width * 0.85, height * 0.1)
 
 
 
