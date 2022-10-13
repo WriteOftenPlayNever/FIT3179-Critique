@@ -102,12 +102,13 @@ window.draw = function() {
     let extend = "" + Math.floor(((progress*12) - Math.floor(progress*12))*60);
     clockish += ":" + (extend.length < 2 ? extend + "0" : extend) + "am";
     
-    stroke(Math.cbrt(256**3 - config.backgroundShade**3));
+    stroke(256 - (Math.floor(progress * 2) * 256));
     config.backgroundShade = vslider(config.backgroundShade, 20, 70, 200, 0, 255);
 
     textSize(50);
     text(clockish, width * 0.85, height * 0.1)
 
+    stroke(255);
     fill(256 - (Math.floor(progress * 2) * 256));
     textSize(50);
     text(clockish, width * 0.85, height * 0.1);
