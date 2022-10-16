@@ -3,36 +3,32 @@
 
 
 
-
-
-let vis_layers;
-let vis_time = 0;
-let adjust = 0;
+let time = 0;
 let SEASONS = {
     SUMMER : {
         id: 0,
-        layer: './data/summer_trees.png',
+        layer: './data/trees/summer_trees.png',
         oceanColour: [109, 213, 248],
         oceanStroke: [10, 148, 194],
         roadColour: [225, 207, 77]
     },
     AUTUMN : {
         id: 1,
-        layer: './data/autumn_trees.png',
+        layer: './data/trees/autumn_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
         roadColour: [225, 203, 122]
     },
     WINTER : {
         id: 2,
-        layer: './data/winter_trees.png',
+        layer: './data/trees/winter_trees.png',
         oceanColour: [140, 179, 217],
         oceanStroke: [102, 153, 204],
         roadColour: [250, 252, 255]
     },
     SPRING : {
         id: 3,
-        layer: './data/spring_trees.png',
+        layer: './data/trees/spring_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
         roadColour: [236, 230, 95]
@@ -40,11 +36,12 @@ let SEASONS = {
 }
 let roadsOutput = [];
 let refedex = [];
-let rawRoadsJSON, ogRoadsGeoJSON;
+let rawRoadsJSON, ogRoadsGeoJSON, oceanGeoJSON;
 
 window.preload = function() {
     ogRoadsGeoJSON = loadJSON("./data/roads_all_min.json");
-    rawRoadsJSON = loadJSON("./data/roads_filtered.json");
+    rawRoadsJSON = loadJSON("./data/roads_filtered_2.json");
+    oceanGeoJSON = loadJSON("./data/ocean_min.json");
 
     SEASONS.SUMMER.layer = loadImage(SEASONS.SUMMER.layer);
     SEASONS.AUTUMN.layer = loadImage(SEASONS.AUTUMN.layer);
@@ -62,15 +59,14 @@ window.setup = function() {
         refedex.push(rawRoadsJSON[i]);
     }
 
+    console.log(width, height);
+
     // Set the background to whatever
     // background(242, 239, 233);
-    // _drawTrees(vis_layers[2]);
-    // saveCanvas(cnv, "autumn_trees", "png");
+    
+    // saveRoads(ogRoadsGeoJSON);
 
-    // _drawRoads(ogRoadsGeoJSON, SEASONS.AUTUMN);
-    // save(roadsOutput, 'roads_filtered_2', 'json');
-
-    frameRate(10);
+    frameRate(30);
     angleMode(RADIANS);
 }
 
@@ -82,55 +78,31 @@ window.draw = function() {
 
     let season = SEASONS.SPRING;
 
-    // drawTrees(season);
+    drawTrees(season);
     drawRoads(season);
-    // drawOcean(vis_layers[1], season);
+    drawOcean(oceanGeoJSON, season);
     
     // stroke(0);
     // strokeWeight(2);
-    // adjust = vslider(adjust, 20, 70, 200, 0, 255);
+    // adjust = hslider(adjust, 20, 70, 200, 0, 255);
     // uiupd();
 }
 
 
 
-function _drawRoads(boundary, season) {
+function saveRoads(boundary) {
     let geom;
     let coords;
     let features = boundary.features;
 
-    // noStroke();
-    // stroke(238, 203, 96);
-    // stroke(0);
-    let rStroke = season.roadColour;
     for (let i = 0; i < features.length; i++) {
         geom = features[i].geometry;
         if (geom) {
             coords = geom.coordinates;
             if (coords) {
 
-                switch (features[i].properties.highway) {
-                    case ("motorway"):
-                        strokeWeight(3);
-                        break;
-                    case ("trunk"):
-                        strokeWeight(1.7);
-                        break;
-                    case ("primary"):
-                        strokeWeight(1);
-                        break;
-                    case ("secondary"):
-                        strokeWeight(0.8);
-                        break;
-                    case ("tertiary"):
-                        strokeWeight(0.4);
-                        break;
-                    default:
-                        break;
-                }
-
                 if (!(features[i].properties.junction)) {
-                    // if (!(features[i].properties.highway == "tertiary")) {
+                    if (!(features[i].properties.highway == "tertiary")) {
                         roadsOutput.push({
                             type: features[i].properties.highway,
                             nodes: []
@@ -144,7 +116,7 @@ function _drawRoads(boundary, season) {
                             let x = map(coords[j][0], 144.1498, 145.7123, 0, width);
                             let y = map(coords[j][1], -37.4418, -38.2646, 0, height);
 
-                            if ((dist(pX, pY, x, y) > 5) || (j == (coords.length - 1))) {
+                            if (dist(pX, pY, x, y) > ((j == (coords.length - 1)) ? 1 : 5)) {
                                 roadsOutput[roadsOutput.length - 1].nodes.push([x, y]);
     
                                 pX = x;
@@ -155,11 +127,13 @@ function _drawRoads(boundary, season) {
                         if (roadsOutput[roadsOutput.length - 1].nodes.length < 2) {
                             roadsOutput.pop();
                         }
-                    // }
+                    }
                 }
             }
         }
     }
+
+    save(roadsOutput, 'roads_filtered_2', 'json');
 }
 
 function drawRoads(season) {
@@ -189,12 +163,12 @@ function drawRoads(season) {
                 break;
         }
 
-        let pX = road.nodes[0][0];
-        let pY = road.nodes[0][1];
+        let pX = map(road.nodes[0][0], 0, 1605, 0, width);
+        let pY = map(road.nodes[0][1], 0, 787, 0, height);
 
         for (let j = 1; j < road.nodes.length; j++) {
-            let x = road.nodes[j][0];
-            let y = road.nodes[j][1];
+            let x = map(road.nodes[j][0], 0, 1604, 0, width);
+            let y = map(road.nodes[j][1], 0, 787, 0, height);
 
             stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
             line(pX, pY, x, y);
@@ -242,7 +216,7 @@ function drawOcean(boundary, season) {
 
 function drawTrees(season) {
     image(season.layer, 0, 0, width, height);
-    filter(BLUR, 0.1);
+    // filter(BLUR, 0.1);
 }
 
 function _drawTrees(boundary) {
