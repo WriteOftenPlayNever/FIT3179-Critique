@@ -2,11 +2,21 @@
 
 
 
+const timeInput = document.getElementById("timeInput");
+const seasonInput = document.getElementById("seasonInput");
 
-let time = 0;
+let timeValue = 0;
+let seasonValue = null;
+let SEASON_CONVERTER = {
+    0: "SUMMER",
+    1: "AUTUMN",
+    2: "WINTER",
+    3: "SPRING"
+}
 let SEASONS = {
     SUMMER : {
         id: 0,
+        sunrise: 381,
         layer: './data/trees/summer_trees.png',
         oceanColour: [109, 213, 248],
         oceanStroke: [10, 148, 194],
@@ -14,6 +24,7 @@ let SEASONS = {
     },
     AUTUMN : {
         id: 1,
+        sunrise: 459,
         layer: './data/trees/autumn_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
@@ -21,6 +32,7 @@ let SEASONS = {
     },
     WINTER : {
         id: 2,
+        sunrise: 498,
         layer: './data/trees/winter_trees.png',
         oceanColour: [140, 179, 217],
         oceanStroke: [102, 153, 204],
@@ -28,6 +40,7 @@ let SEASONS = {
     },
     SPRING : {
         id: 3,
+        sunrise: 423,
         layer: './data/trees/spring_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
@@ -54,12 +67,16 @@ window.setup = function() {
     // canvas takes up the window
     let cnv = createCanvas(windowWidth, windowHeight);
     cnv.style('display', 'block');
+    cnv.style('overflow', 'hidden');
 
     for (let i in rawRoadsJSON) {
         refedex.push(rawRoadsJSON[i]);
     }
 
-    console.log(width, height);
+    timeValue = timeInput.value;
+    seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
+
+    console.log(timeValue, seasonValue);
 
     // Set the background to whatever
     // background(242, 239, 233);
@@ -71,23 +88,17 @@ window.setup = function() {
 }
 
 window.draw = function() {
-    // Reset the canvas
-    // resizeCanvas(windowWidth, windowHeight);
-    // background(242, 239, 233);
-    background(0);
+    if (seasonValue != seasonInput.value || timeValue != timeInput.value) {
+        timeValue = timeInput.value;
+        seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
 
-    let season = SEASONS.SPRING;
-
-    drawTrees(season);
-    drawRoads(season);
-    drawOcean(oceanGeoJSON, season);
-    
-    // stroke(0);
-    // strokeWeight(2);
-    // adjust = hslider(adjust, 20, 70, 200, 0, 255);
-    // uiupd();
+        background(242, 239, 233);
+        
+        drawTrees(seasonValue);
+        drawRoads(seasonValue);
+        drawOcean(oceanGeoJSON, seasonValue);
+    }
 }
-
 
 
 function saveRoads(boundary) {
