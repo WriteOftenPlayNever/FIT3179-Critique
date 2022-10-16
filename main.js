@@ -20,7 +20,8 @@ let SEASONS = {
         layer: './data/trees/summer_trees.png',
         oceanColour: [109, 213, 248],
         oceanStroke: [10, 148, 194],
-        roadColour: [225, 207, 77]
+        roadColour: [225, 207, 77],
+        backgroundColour: [255, 255, 230]
     },
     AUTUMN : {
         id: 1,
@@ -28,7 +29,8 @@ let SEASONS = {
         layer: './data/trees/autumn_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
-        roadColour: [225, 203, 122]
+        roadColour: [225, 203, 122],
+        backgroundColour: [232, 239, 243]
     },
     WINTER : {
         id: 2,
@@ -36,7 +38,8 @@ let SEASONS = {
         layer: './data/trees/winter_trees.png',
         oceanColour: [140, 179, 217],
         oceanStroke: [102, 153, 204],
-        roadColour: [250, 252, 255]
+        roadColour: [250, 252, 255],
+        backgroundColour: [234, 242, 255]
     },
     SPRING : {
         id: 3,
@@ -44,11 +47,12 @@ let SEASONS = {
         layer: './data/trees/spring_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
-        roadColour: [236, 230, 95]
+        roadColour: [236, 230, 95],
+        backgroundColour: [232, 255, 229]
     }
 }
-let roadsOutput = [];
-let refedex = [];
+let roadsOutput = [], refedex = [];
+let clockString = "00:00am";
 let rawRoadsJSON, ogRoadsGeoJSON, oceanGeoJSON;
 
 window.preload = function() {
@@ -76,10 +80,7 @@ window.setup = function() {
     timeValue = timeInput.value;
     seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
 
-    console.log(timeValue, seasonValue);
-
-    // Set the background to whatever
-    // background(242, 239, 233);
+    
     
     // saveRoads(ogRoadsGeoJSON);
 
@@ -88,18 +89,34 @@ window.setup = function() {
 }
 
 window.draw = function() {
-    if (seasonValue != seasonInput.value || timeValue != timeInput.value) {
+    if (seasonValue.id != seasonInput.value || timeValue != timeInput.value) {
         timeValue = timeInput.value;
         seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
 
-        background(242, 239, 233);
+        
+        background(seasonValue.backgroundColour[0], seasonValue.backgroundColour[1], seasonValue.backgroundColour[2]);
         
         drawTrees(seasonValue);
         drawRoads(seasonValue);
         drawOcean(oceanGeoJSON, seasonValue);
+
+        handleClock();
     }
 }
 
+function handleClock() {
+    let hour = Math.floor(timeValue / 60);
+    let minute = timeValue % 60;
+    hour = hour < 10 ? "0" + [hour] : hour;
+    minute = minute < 10 ? "0" + [minute] : minute;
+    clockString = `${hour}:${minute}am`;
+
+    strokeWeight(1.5);
+    stroke(242, 242, 242);
+    fill(13, 13, 13);
+    textSize(height/19.7);
+    text(clockString, 0.85 * width, 0.1 * height);
+}
 
 function saveRoads(boundary) {
     let geom;
