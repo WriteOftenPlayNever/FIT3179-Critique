@@ -4,79 +4,222 @@
 
 
 
-let boundary;
-let padding = 20;
-let config = {
-    backgroundShade: 255
+
+let vis_layers;
+let vis_time = 0;
+let adjust = 0;
+let SEASONS = {
+    SUMMER : {
+        id: 0,
+        layer: './data/summer_trees.png',
+        oceanColour: [109, 213, 248],
+        oceanStroke: [10, 148, 194],
+        roadColour: [225, 207, 77]
+    },
+    AUTUMN : {
+        id: 1,
+        layer: './data/autumn_trees.png',
+        oceanColour: [170, 211, 223],
+        oceanStroke: [102, 176, 198],
+        roadColour: [225, 203, 122]
+    },
+    WINTER : {
+        id: 2,
+        layer: './data/winter_trees.png',
+        oceanColour: [140, 179, 217],
+        oceanStroke: [102, 153, 204],
+        roadColour: [250, 252, 255]
+    },
+    SPRING : {
+        id: 3,
+        layer: './data/spring_trees.png',
+        oceanColour: [170, 211, 223],
+        oceanStroke: [102, 176, 198],
+        roadColour: [236, 230, 95]
+    }
 }
-let sunlightSlider = 0;
+let roadsOutput = [];
+let refedex = [];
+let rawRoadsJSON, ogRoadsGeoJSON;
 
 window.preload = function() {
-    boundary = loadJSON("TREE_DENSITY_MIN.json");
+    ogRoadsGeoJSON = loadJSON("./data/roads_all_min.json");
+    rawRoadsJSON = loadJSON("./data/roads_filtered.json");
+
+    SEASONS.SUMMER.layer = loadImage(SEASONS.SUMMER.layer);
+    SEASONS.AUTUMN.layer = loadImage(SEASONS.AUTUMN.layer);
+    SEASONS.WINTER.layer = loadImage(SEASONS.WINTER.layer);
+    SEASONS.SPRING.layer = loadImage(SEASONS.SPRING.layer);
 }
 
 
 window.setup = function() {
-    // canvas takes up 99% of the window space
+    // canvas takes up the window
     let cnv = createCanvas(windowWidth, windowHeight);
     cnv.style('display', 'block');
 
+    for (let i in rawRoadsJSON) {
+        refedex.push(rawRoadsJSON[i]);
+    }
+
     // Set the background to whatever
-    background(config.backgroundShade);
+    // background(242, 239, 233);
+    // _drawTrees(vis_layers[2]);
+    // saveCanvas(cnv, "autumn_trees", "png");
 
-    frameRate(30);
+    // _drawRoads(ogRoadsGeoJSON, SEASONS.AUTUMN);
+    // save(roadsOutput, 'roads_filtered_2', 'json');
+
+    frameRate(10);
     angleMode(RADIANS);
+}
 
-    console.log(boundary);
+window.draw = function() {
+    // Reset the canvas
+    // resizeCanvas(windowWidth, windowHeight);
+    // background(242, 239, 233);
+    background(0);
 
-    // console.log(p5.tween);
-    // p5.tween.manager
-    //     .addTween(config)
-    //     .addMotion('backgroundShade', 5, 1500, 'easeInOutQuint')
-    //     .addMotion('backgroundShade', 250, 2000, 'easeInOutQuint')
-    //     .addMotion('backgroundShade', 255, 1500, 'easeInOutQuint')
-    //     .addMotion('backgroundShade', 250, 1500, 'easeInOutQuint')
-    //     .addMotion('backgroundShade', 5, 2000, 'easeInOutQuint')
-    //     .addMotion('backgroundShade', 0, 1500, 'easeInOutQuint')
-    //     .startLoop();
+    let season = SEASONS.SPRING;
+
+    // drawTrees(season);
+    drawRoads(season);
+    // drawOcean(vis_layers[1], season);
+    
+    // stroke(0);
+    // strokeWeight(2);
+    // adjust = vslider(adjust, 20, 70, 200, 0, 255);
+    // uiupd();
 }
 
 
 
-window.draw = function() {
-    // Reset the canvas
-    resizeCanvas(windowWidth, windowHeight);
-    background(config.backgroundShade);
+function _drawRoads(boundary, season) {
+    let geom;
+    let coords;
+    let features = boundary.features;
 
-    // console.log(config.backgroundShade);
+    // noStroke();
+    // stroke(238, 203, 96);
+    // stroke(0);
+    let rStroke = season.roadColour;
+    for (let i = 0; i < features.length; i++) {
+        geom = features[i].geometry;
+        if (geom) {
+            coords = geom.coordinates;
+            if (coords) {
 
-    // This probably sucks
+                switch (features[i].properties.highway) {
+                    case ("motorway"):
+                        strokeWeight(3);
+                        break;
+                    case ("trunk"):
+                        strokeWeight(1.7);
+                        break;
+                    case ("primary"):
+                        strokeWeight(1);
+                        break;
+                    case ("secondary"):
+                        strokeWeight(0.8);
+                        break;
+                    case ("tertiary"):
+                        strokeWeight(0.4);
+                        break;
+                    default:
+                        break;
+                }
+
+                if (!(features[i].properties.junction)) {
+                    // if (!(features[i].properties.highway == "tertiary")) {
+                        roadsOutput.push({
+                            type: features[i].properties.highway,
+                            nodes: []
+                        });
+    
+                        let pX = map(coords[0][0], 144.1498, 145.7123, 0, width);
+                        let pY = map(coords[0][1], -37.4418, -38.2646, 0, height);
+                        roadsOutput[roadsOutput.length - 1].nodes.push([pX, pY]);
+
+                        for (let j = 1; j < coords.length; j++) {
+                            let x = map(coords[j][0], 144.1498, 145.7123, 0, width);
+                            let y = map(coords[j][1], -37.4418, -38.2646, 0, height);
+
+                            if ((dist(pX, pY, x, y) > 5) || (j == (coords.length - 1))) {
+                                roadsOutput[roadsOutput.length - 1].nodes.push([x, y]);
+    
+                                pX = x;
+                                pY = y;
+                            }
+                        }
+    
+                        if (roadsOutput[roadsOutput.length - 1].nodes.length < 2) {
+                            roadsOutput.pop();
+                        }
+                    // }
+                }
+            }
+        }
+    }
+}
+
+function drawRoads(season) {
+    let rStroke = season.roadColour;
+
+    strokeJoin(ROUND);
+    for (let i = 0; i < refedex.length; i++) {
+        const road = refedex[i];
+
+        switch (road.type) {
+            case ("motorway"):
+                strokeWeight(3);
+                break;
+            case ("trunk"):
+                strokeWeight(1.7);
+                break;
+            case ("primary"):
+                strokeWeight(1);
+                break;
+            case ("secondary"):
+                strokeWeight(0.8);
+                break;
+            case ("tertiary"):
+                strokeWeight(0.4);
+                break;
+            default:
+                break;
+        }
+
+        let pX = road.nodes[0][0];
+        let pY = road.nodes[0][1];
+
+        for (let j = 1; j < road.nodes.length; j++) {
+            let x = road.nodes[j][0];
+            let y = road.nodes[j][1];
+
+            stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
+            line(pX, pY, x, y);
+
+            pX = x;
+            pY = y;
+        }
+    }
+}
+
+function drawOcean(boundary, season) {
     let geom;
     let polygons;
     let coords;
     let features = boundary.features;
 
-    noStroke();
+    strokeWeight(2);
+    let oStroke = season.oceanStroke;
+    stroke(oStroke[0], oStroke[1], oStroke[2], 255 * 0.6);
+
+    let oFill = season.oceanColour;
+    fill(oFill[0], oFill[1], oFill[2], 255 * 0.35);
+    
     for (let i = 0; i < features.length; i++) {
         geom = features[i].geometry;
-        let properties = features[i].properties;
-        // console.log(properties.TREE_DEN);
-        switch (properties.TREE_DEN) {
-            case "dense":
-                console.log((config.backgroundShade/255)**2);
-                // fill(0, 80, 51, 255);
-                fill(0, 80, 51, 255 * (config.backgroundShade/255)**2);
-                break;
-            case "medium":
-                fill(0, 130, 0, 255 * (config.backgroundShade/255)**2);
-                break;
-            case "sparse":
-                fill(153, 160, 51, 255 * (config.backgroundShade/255)**2);
-                break;
-            default:
-                fill(153, 255, 51, 255* (config.backgroundShade/255)**2);
-                break;
-        }
         if (geom) {
             polygons = geom.coordinates;
             if (polygons) {
@@ -86,8 +229,8 @@ window.draw = function() {
                     for (let j = 0; j < coords.length; j++) {
                         let lon = coords[j][0];
                         let lat = coords[j][1];
-                        let x = map(lon, 2466478, 2530505, 0 + padding, height - padding);
-                        let y = map(lat, 2435000, 2366666, 0 + padding, height - padding);
+                        let x = map(lon, 144.1498, 145.7123, 0, width);
+                        let y = map(lat, -37.4418, -38.2646, 0, height);
                         vertex(x,y);
                     }
                     endShape(CLOSE);
@@ -95,29 +238,86 @@ window.draw = function() {
             }
         }
     }
+}
 
-    let progress = config.backgroundShade/255;
+function drawTrees(season) {
+    image(season.layer, 0, 0, width, height);
+    filter(BLUR, 0.1);
+}
 
-    let clockish = "" + Math.floor(progress*12);
-    let extend = "" + Math.floor(((progress*12) - Math.floor(progress*12))*60);
-    clockish += ":" + (extend.length < 2 ? extend + "0" : extend) + "am";
-    
-    stroke(256 - (Math.floor(progress * 2) * 256));
-    config.backgroundShade = vslider(config.backgroundShade, 20, 70, 200, 0, 255);
+function _drawTrees(boundary) {
+    let geom;
+    let polygons;
+    let coords;
+    let features = boundary.features;
 
-    textSize(50);
-    text(clockish, width * 0.85, height * 0.1)
+    for (let i = 0; i < features.length; i++) {
+        geom = features[i].geometry;
+        if (geom) {
+            polygons = geom.coordinates;
+            if (polygons) {
+                coords = polygons[0];
+                if (coords) {
+                    beginShape();
+                    for (let j = 0; j < coords.length; j++) {
+                        let lon = coords[j][0];
+                        let lat = coords[j][1];
 
-    stroke(255);
-    fill(256 - (Math.floor(progress * 2) * 256));
-    textSize(50);
-    text(clockish, width * 0.85, height * 0.1);
-    textSize(30);
-    text("Melbourne Shade/Light Level", width * 0.73, height * 0.15);
+                        // let vert = (5846764 - lat)/(5846764 - 5764045);
+                        // let x = map(lon, 249613, 378905, 0, width);
+                        // let y = map(lat, 5846764, 5764045, 0, height);
 
+                        switch (features[i].properties.TREE_DEN) {
+                            case ("sparse"):
+                                strokeWeight(0.2);
+                                stroke(220, 253, 180);
+                                fill(220, 253, 180);
+                                break;
+                            case ("medium"):
+                                strokeWeight(0.4);
+                                stroke(157, 217, 38);
+                                fill(157, 217, 38);
+                                break;
+                            case ("dense"):
+                                strokeWeight(0.6);
+                                stroke(67, 134, 45);
+                                fill(67, 134, 45);
+                                break;
+                            default:
+                                break;
+                        }
 
+                        let rotated = rotator(lon, lat, { y: 5805404, x: 314259 });
+                        let x = map(rotated.x, 249613, 378905 + 7500, 0, width);
+                        let y = map(rotated.y, 5846764 + 6500, 5764045 - 1000, 0, height);
+                        vertex(x,y);
+                    }
+                    endShape(CLOSE);
+                }
+            }
+        }
+    }
+}
 
-    uiupd();
+function rotator(x, y, origin) {
+    let xAxis = {};
+    let yAxis = {};
+    let rotation = -0.0274889357;
+    // let rotation = Math.PI / 2;
+    let rotated = {};
+
+    x = x - origin.x;
+    y = y - origin.y;
+
+    xAxis.x = cos(rotation);
+    xAxis.y = sin(rotation);
+    yAxis.x = -xAxis.y;
+    yAxis.y = xAxis.x;
+
+    rotated.x = x * xAxis.x + y * yAxis.x + origin.x;
+    rotated.y = x * xAxis.y + y * yAxis.y + origin.y;
+
+    return rotated;
 }
 
 
