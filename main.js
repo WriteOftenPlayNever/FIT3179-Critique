@@ -25,7 +25,7 @@ let SEASONS = {
     },
     AUTUMN : {
         id: 1,
-        sunrise: 459,
+        sunrise: 449,
         layer: './data/trees/autumn_trees.png',
         oceanColour: [170, 211, 223],
         oceanStroke: [102, 176, 198],
@@ -34,7 +34,7 @@ let SEASONS = {
     },
     WINTER : {
         id: 2,
-        sunrise: 498,
+        sunrise: 488,
         layer: './data/trees/winter_trees.png',
         oceanColour: [140, 179, 217],
         oceanStroke: [102, 153, 204],
@@ -93,14 +93,23 @@ window.draw = function() {
         timeValue = timeInput.value;
         seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
 
-        
-        background(seasonValue.backgroundColour[0], seasonValue.backgroundColour[1], seasonValue.backgroundColour[2]);
+        handleBackground(seasonValue);
         
         drawTrees(seasonValue);
         drawRoads(seasonValue);
         drawOcean(oceanGeoJSON, seasonValue);
 
         handleClock();
+    }
+}
+
+function handleBackground(season) {
+    if (timeValue < season.sunrise) {
+        let progress = timeValue/season.sunrise;
+        let shade = Math.floor((progress**2) * 58);
+        background(shade, shade, shade);
+    } else {
+        background(season.backgroundColour[0], season.backgroundColour[1], season.backgroundColour[2]);
     }
 }
 
