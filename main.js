@@ -207,7 +207,19 @@ function drawRoads(season) {
             let x = map(road.nodes[j][0], 0, 1604, 0, width);
             let y = map(road.nodes[j][1], 0, 787, 0, height);
 
-            stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
+            if (timeValue > (season.sunrise - 75)) {
+                let progress = ((timeValue - (season.sunrise - 75))/120)*60;
+                if (progress > ((x*y) % 60)) {
+                    stroke(61, 61, 61, 245);
+                } else {
+                    stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
+                }
+            } else if (timeValue > (season.sunrise + 45)) {
+                stroke(61, 61, 61, 245);
+            } else {
+                stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
+            }
+
             line(pX, pY, x, y);
 
             pX = x;
@@ -252,6 +264,12 @@ function drawOcean(boundary, season) {
 }
 
 function drawTrees(season) {
+    if (timeValue < season.sunrise) {
+        let progress = (timeValue/season.sunrise)**5;
+        tint(220 + (15 * progress), (255 * 0.95)*progress);
+    } else {
+        tint(255, 255 * 0.975);
+    }
     image(season.layer, 0, 0, width, height);
     // filter(BLUR, 0.1);
 }
