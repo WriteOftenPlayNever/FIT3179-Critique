@@ -2,11 +2,6 @@
 
 
 
-const timeInput = document.getElementById("timeInput");
-const seasonInput = document.getElementById("seasonInput");
-
-let timeValue = 0;
-let seasonValue = null;
 let SEASON_CONVERTER = {
     0: "SUMMER",
     1: "AUTUMN",
@@ -39,7 +34,7 @@ let SEASONS = {
         oceanColour: [140, 179, 217],
         oceanStroke: [102, 153, 204],
         roadColour: [250, 252, 255],
-        backgroundColour: [234, 242, 255]
+        backgroundColour: [223, 232, 236]
     },
     SPRING : {
         id: 3,
@@ -51,12 +46,25 @@ let SEASONS = {
         backgroundColour: [232, 255, 229]
     }
 }
+
+let timeValue = -1;
+let seasonValue = null;
 let roadsOutput = [], refedex = [];
 let clockString = "00:00am";
 let rawRoadsJSON, ogRoadsGeoJSON, oceanGeoJSON;
 
+const timeInput = document.getElementById("timeInput");
+const seasonInput = document.getElementById("seasonInput");
+const titleText = document.getElementsByTagName("h2").item(0);
+
+document.addEventListener("mousemove", (ev) => {
+    
+});
+
+
+
+
 window.preload = function() {
-    ogRoadsGeoJSON = loadJSON("./data/roads_all_min.json");
     rawRoadsJSON = loadJSON("./data/roads_filtered_2.json");
     oceanGeoJSON = loadJSON("./data/ocean_min.json");
 
@@ -77,15 +85,12 @@ window.setup = function() {
         refedex.push(rawRoadsJSON[i]);
     }
 
-    timeValue = timeInput.value;
+    // timeValue = timeInput.value;
     seasonValue = SEASONS[SEASON_CONVERTER[seasonInput.value]];
-
-    
-    
-    // saveRoads(ogRoadsGeoJSON);
 
     frameRate(30);
     angleMode(RADIANS);
+
 }
 
 window.draw = function() {
@@ -106,10 +111,52 @@ window.draw = function() {
 function handleBackground(season) {
     if (timeValue < season.sunrise) {
         let progress = timeValue/season.sunrise;
-        let shade = Math.floor((progress**2) * 58);
+        let shade = Math.floor((progress**4) * 65);
         background(shade, shade, shade);
+
+        // Title
+        titleText.style.color = `rgb(${256-shade},${256-shade},${256-shade})`;
+        titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-shade)},${(256-shade) * 0.9},${(256-shade) * 0.9})`;
+    } else if (timeValue < season.sunrise + 90) {
+        let progress = (timeValue-season.sunrise)/90;
+        let colours = [
+            color(color(65, 65, 65)),
+            color('#060405'),
+            color('#853c1c'),
+            color('#fba55a'),
+            color('#d0605e'),
+            color('#745669'),
+            color(season.backgroundColour[0], season.backgroundColour[1], season.backgroundColour[2])
+        ];
+
+        let points = colours;
+        while (points.length > 1) {
+            let lerped = [];
+            for (let i = 1; i < points.length; i++) {
+                lerped.push(lerpColor(points[i - 1], points[i], progress));
+            }
+            points = lerped;
+        }
+        
+        let r = red(points[0]),
+            g = green(points[0]),
+            b = blue(points[0]);
+
+        background(r, g, b);
+
+        // Title
+        titleText.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
+        titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
     } else {
-        background(season.backgroundColour[0], season.backgroundColour[1], season.backgroundColour[2]);
+        let r = season.backgroundColour[0],
+            g = season.backgroundColour[1],
+            b = season.backgroundColour[2];
+        
+        background(r, g, b);
+
+        // Title
+        titleText.style.color = `rgb(${256-r},${256-g},${256-b})`;
+        titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
     }
 }
 
@@ -207,15 +254,15 @@ function drawRoads(season) {
             let x = map(road.nodes[j][0], 0, 1604, 0, width);
             let y = map(road.nodes[j][1], 0, 787, 0, height);
 
-            if (timeValue > (season.sunrise - 75)) {
+            if (timeValue > season.sunrise - 75) {
                 let progress = ((timeValue - (season.sunrise - 75))/120)*60;
                 if (progress > ((x*y) % 60)) {
-                    stroke(61, 61, 61, 245);
+                    stroke(91, 91, 92, 225);
                 } else {
                     stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
                 }
             } else if (timeValue > (season.sunrise + 45)) {
-                stroke(61, 61, 61, 245);
+                stroke(91, 91, 92, 225);
             } else {
                 stroke(rStroke[0] + Math.floor(((x + y) % 4)*12), rStroke[1], rStroke[2], 100);
             }
@@ -265,13 +312,22 @@ function drawOcean(boundary, season) {
 
 function drawTrees(season) {
     if (timeValue < season.sunrise) {
-        let progress = (timeValue/season.sunrise)**5;
-        tint(220 + (15 * progress), (255 * 0.95)*progress);
+        let progress = (timeValue/season.sunrise)**6;
+        if (season.id == 1) {
+            tint(245, 153, 61, (255 * 0.95)*progress);
+        } else if (season.id == 2) {
+            tint(220 + (15 * progress), (255 * 0.65)*progress);
+        } else {
+            tint(220 + (15 * progress), (255 * 0.95)*progress);
+        }
     } else {
-        tint(255, 255 * 0.975);
+        if (season.id == 2) {
+            tint(255, 255 * 0.7);
+        } else {
+            tint(255, 255 * 0.975);
+        }
     }
     image(season.layer, 0, 0, width, height);
-    // filter(BLUR, 0.1);
 }
 
 function _drawTrees(boundary) {

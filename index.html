@@ -4,20 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- PLEASE NO CHANGES BELOW THIS LINE (UNTIL I SAY SO) -->
+  <title>Colours of Melbourne</title>
+
   <script src="p5.min.js"></script>
   <script src="https://unpkg.com/p5.tween/dist/p5.tween.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/zturtledog/I_AM_UI/i-am-ui-new.js"></script>
   <script language="javascript" type="module" src="main.js"></script>
-  <!-- OK, YOU CAN MAKE CHANGES BELOW THIS LINE AGAIN -->
 
-  <!-- This line removes any default padding and style.
-       You might only need one of these values set. -->
-  <style> body { padding: 0; margin: 0; } </style>
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-  <input id="timeInput" type="range" min="0" max="720" style="position: absolute; left: calc(50% - 75px); top: 42px; width: 150px;">
-  <input id="seasonInput" type="range" min="0" max="3" style="position: absolute; left: calc(50% - 75px); top: 72px; width: 150px;" step="1">
+    <h2>The Colours of Melbourne</h2>
+    <input id="timeInput" type="range" min="0" max="720" value="0">
+    <input id="seasonInput" type="range" min="0" max="3" step="1" value="0">
 </body>
 </html>
