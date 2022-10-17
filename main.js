@@ -57,6 +57,21 @@ const timeInput = document.getElementById("timeInput");
 const seasonInput = document.getElementById("seasonInput");
 const titleText = document.getElementsByTagName("h2").item(0);
 
+const seasonTag = document.getElementById('seasonTag');
+const timeTag = document.getElementById('timeTag');
+
+const tree1D = document.getElementById('tree1');
+const tree2D = document.getElementById('tree2');
+const tree3D = document.getElementById('tree3');
+const oceanStrokeD = document.getElementById('oceanStroke');
+const oceanDotD = document.getElementById('ocean');
+const roadD = document.getElementById('road');
+const roadDarkD = document.getElementById('roadDark');
+const backgroundDotD = document.getElementById('back');
+const seasonName = document.getElementById('seasonName');
+const dawnnTime = document.getElementById('dawn');
+
+
 document.addEventListener("mousemove", (ev) => {
     
 });
@@ -90,7 +105,7 @@ window.setup = function() {
 
     frameRate(30);
     angleMode(RADIANS);
-
+    textFont('Trebuchet MS');
 }
 
 window.draw = function() {
@@ -103,10 +118,69 @@ window.draw = function() {
         drawTrees(seasonValue);
         drawRoads(seasonValue);
         drawOcean(oceanGeoJSON, seasonValue);
+        legend(seasonValue);
 
         handleClock();
     }
 }
+
+
+
+
+
+function legend(season) {
+    let roadC = season.roadColour;
+    let ocean1 = season.oceanColour;
+    let ocean2 = season.oceanStroke;
+    let tree1, tree2, tree3;
+
+    switch (season.id) {
+        case 0:
+            tree1 = [67, 134, 45];
+            tree2 = [157, 217, 38];
+            tree3 = [220, 253, 180];
+            seasonName.innerText = "Summer"
+            break;
+        case 1:
+            tree1 = [130, 168, 93];
+            tree2 = [213, 96, 57];
+            tree3 = [214, 133, 67];
+            seasonName.innerText = "Autumn"
+            break;
+        case 2:
+            tree1 = [130, 168, 93];
+            tree2 = [147, 197, 129];
+            tree3 = [147, 197, 129];
+            seasonName.innerText = "Winter"
+            break;
+        case 3:
+            tree1 = [51, 102, 0];
+            tree2 = [80, 192, 42];
+            tree3 = [142, 214, 118];
+            seasonName.innerText = "Spring"
+            break;
+        default:
+            break;
+    }
+
+    let hour = Math.floor(season.sunrise / 60);
+    let minute = season.sunrise % 60;
+    hour = hour < 10 ? "0" + [hour] : hour;
+    minute = minute < 10 ? "0" + [minute] : minute;
+    clockString = `${hour}:${minute}am`;
+    dawnnTime.innerText = clockString;
+
+
+    tree1D.style.color = `rgb(${tree1[0]},${tree1[1]},${tree1[2]})`;
+    tree2D.style.color = `rgb(${tree2[0]},${tree2[1]},${tree2[2]})`;
+    tree3D.style.color = `rgb(${tree3[0]},${tree3[1]},${tree3[2]})`;
+    roadD.style.color = `rgb(${roadC[0]},${roadC[1]},${roadC[2]})`;
+    roadDarkD.style.color = `rgb(${91},${91},${92})`;
+    backgroundDotD.style.color = `rgb(${season.backgroundColour[0]},${season.backgroundColour[1]},${season.backgroundColour[2]})`;
+    
+    oceanDotD.style.color = `rgb(${ocean1[0]},${ocean1[1]},${ocean1[2]})`;
+    oceanStrokeD.style.color = `rgb(${ocean2[0]},${ocean2[1]},${ocean2[2]})`;
+};
 
 function handleBackground(season) {
     if (timeValue < season.sunrise) {
@@ -117,6 +191,10 @@ function handleBackground(season) {
         // Title
         titleText.style.color = `rgb(${256-shade},${256-shade},${256-shade})`;
         titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-shade)},${(256-shade) * 0.9},${(256-shade) * 0.9})`;
+        seasonTag.style.color = `rgb(${256-shade},${256-shade},${256-shade})`;
+        seasonTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-shade)},${(256-shade) * 0.9},${(256-shade) * 0.9})`;
+        timeTag.style.color = `rgb(${256-shade},${256-shade},${256-shade})`;
+        timeTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-shade)},${(256-shade) * 0.9},${(256-shade) * 0.9})`;
     } else if (timeValue < season.sunrise + 90) {
         let progress = (timeValue-season.sunrise)/90;
         let colours = [
@@ -147,6 +225,10 @@ function handleBackground(season) {
         // Title
         titleText.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
         titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
+        seasonTag.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
+        seasonTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
+        timeTag.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
+        timeTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
     } else {
         let r = season.backgroundColour[0],
             g = season.backgroundColour[1],
@@ -157,6 +239,10 @@ function handleBackground(season) {
         // Title
         titleText.style.color = `rgb(${256-r},${256-g},${256-b})`;
         titleText.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
+        seasonTag.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
+        seasonTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
+        timeTag.style.color = `rgb(${256-r * 1.1},${256-g * 1.1},${256-b * 1.1})`;
+        timeTag.style["text-shadow"] = `0px 0px 10px rgb(${(256-r) * 0.9},${(256-g) * 0.9},${(256-b) * 0.9})`;
     }
 }
 
@@ -171,7 +257,7 @@ function handleClock() {
     stroke(242, 242, 242);
     fill(13, 13, 13);
     textSize(height/19.7);
-    text(clockString, 0.85 * width, 0.1 * height);
+    text(clockString, 0.85 * width, 0.065 * height);
 }
 
 function saveRoads(boundary) {
@@ -314,9 +400,9 @@ function drawTrees(season) {
     if (timeValue < season.sunrise) {
         let progress = (timeValue/season.sunrise)**6;
         if (season.id == 1) {
-            tint(245, 153, 61, (255 * 0.95)*progress);
+            tint(249, 191, 134, (255 * 0.95)*progress);
         } else if (season.id == 2) {
-            tint(220 + (15 * progress), (255 * 0.65)*progress);
+            tint(220 + (15 * progress), (255 * 0.95)*progress);
         } else {
             tint(220 + (15 * progress), (255 * 0.95)*progress);
         }
